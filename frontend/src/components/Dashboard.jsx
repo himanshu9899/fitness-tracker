@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, Cell } from 'recharts';
 import { Activity, Flame, Dumbbell, Award, Plus, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ const Dashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState(7);
+  const [activeCalorieIndex, setActiveCalorieIndex] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -70,11 +71,11 @@ const Dashboard = () => {
     return null;
   };
 
-  // Active bar shapes for smooth scaling effect on hover without any tooltip
+  // Active bar shapes for smooth 1.45x scaling effect on hover with soft glow and zero tooltip
   const ActiveConsumedBar = (props) => {
     const { x, y, width, height, fill } = props;
     if (!width || !height) return null;
-    const scale = 1.08;
+    const scale = 1.45;
     const w = width * scale;
     const h = height * scale;
     const dx = (w - width) / 2;
@@ -86,11 +87,14 @@ const Dashboard = () => {
         width={w}
         height={h}
         fill={fill}
-        rx={4}
-        ry={4}
+        stroke="#34d399"
+        strokeWidth={2}
+        rx={5}
+        ry={5}
         style={{
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          filter: 'brightness(1.15) drop-shadow(0px 4px 10px rgba(16, 185, 129, 0.4))',
+          transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+          filter: 'drop-shadow(0px 0px 14px rgba(16, 185, 129, 0.85))',
+          cursor: 'pointer',
         }}
       />
     );
@@ -99,7 +103,7 @@ const Dashboard = () => {
   const ActiveTargetBar = (props) => {
     const { x, y, width, height, fill } = props;
     if (!width || !height) return null;
-    const scale = 1.08;
+    const scale = 1.45;
     const w = width * scale;
     const h = height * scale;
     const dx = (w - width) / 2;
@@ -111,12 +115,15 @@ const Dashboard = () => {
         width={w}
         height={h}
         fill={fill}
-        opacity={0.45}
-        rx={4}
-        ry={4}
+        stroke="#94a3b8"
+        strokeWidth={1.5}
+        opacity={0.7}
+        rx={5}
+        ry={5}
         style={{
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          filter: 'brightness(1.2)',
+          transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+          filter: 'drop-shadow(0px 0px 10px rgba(100, 116, 139, 0.6))',
+          cursor: 'pointer',
         }}
       />
     );
@@ -292,7 +299,16 @@ const Dashboard = () => {
           
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={daily_stats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <BarChart
+                data={daily_stats}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                onMouseMove={(state) => {
+                  if (state && state.activeTooltipIndex !== undefined && state.activeTooltipIndex !== null) {
+                    setActiveCalorieIndex(state.activeTooltipIndex);
+                  }
+                }}
+                onMouseLeave={() => setActiveCalorieIndex(null)}
+              >
                 <defs>
                   <linearGradient id="colorCals" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
@@ -302,10 +318,46 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                 <XAxis dataKey="date" stroke="#64748b" fontSize={10} tickLine={false} />
                 <YAxis stroke="#64748b" fontSize={10} tickLine={false} />
-                <Tooltip content={() => null} cursor={false} />
+                <Tooltip content={() => null} cursor={{ stroke: '#475569', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
-                <Bar dataKey="calories_consumed" name="Consumed" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={30} activeBar={<ActiveConsumedBar />} />
-                <Bar dataKey="calories_target" name="Target" fill="#64748b" radius={[4, 4, 0, 0]} maxBarSize={30} opacity={0.3} activeBar={<ActiveTargetBar />} />
+                <Bar
+                  dataKey="calories_consumed"
+                  name="Consumed"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={30}
+                  activeBar={<ActiveConsumedBar />}
+                >
+                  {daily_stats.map((entry, index) => (
+                    <Cell
+                      key={`cell-consumed-${index}`}
+                      fill="#10b981"
+                      style={{
+                        transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+                        opacity: activeCalorieIndex === null || activeCalorieIndex === index ? 1 : 0.65,
+                        cursor: 'pointer',
+                      }}
+                    />
+                  ))}
+                </Bar>
+                <Bar
+                  dataKey="calories_target"
+                  name="Target"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={30}
+                  activeBar={<ActiveTargetBar />}
+                >
+                  {daily_stats.map((entry, index) => (
+                    <Cell
+                      key={`cell-target-${index}`}
+                      fill="#64748b"
+                      style={{
+                        transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+                        opacity: activeCalorieIndex === null ? 0.3 : activeCalorieIndex === index ? 0.65 : 0.18,
+                        cursor: 'pointer',
+                      }}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
