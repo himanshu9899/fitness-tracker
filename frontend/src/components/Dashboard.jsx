@@ -70,17 +70,56 @@ const Dashboard = () => {
     return null;
   };
 
-  const CustomCalorieTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl shadow-xl space-y-1">
-          <p className="text-xs text-slate-400 font-medium">{payload[0].payload.date}</p>
-          <p className="text-xs text-emerald-400 font-bold">Consumed: <span className="font-mono">{payload[0].value} kcal</span></p>
-          <p className="text-xs text-slate-400 font-semibold">Target: <span className="font-mono">{payload[1]?.value} kcal</span></p>
-        </div>
-      );
-    }
-    return null;
+  // Active bar shapes for smooth scaling effect on hover without any tooltip
+  const ActiveConsumedBar = (props) => {
+    const { x, y, width, height, fill } = props;
+    if (!width || !height) return null;
+    const scale = 1.08;
+    const w = width * scale;
+    const h = height * scale;
+    const dx = (w - width) / 2;
+    const dy = h - height;
+    return (
+      <rect
+        x={x - dx}
+        y={y - dy}
+        width={w}
+        height={h}
+        fill={fill}
+        rx={4}
+        ry={4}
+        style={{
+          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          filter: 'brightness(1.15) drop-shadow(0px 4px 10px rgba(16, 185, 129, 0.4))',
+        }}
+      />
+    );
+  };
+
+  const ActiveTargetBar = (props) => {
+    const { x, y, width, height, fill } = props;
+    if (!width || !height) return null;
+    const scale = 1.08;
+    const w = width * scale;
+    const h = height * scale;
+    const dx = (w - width) / 2;
+    const dy = h - height;
+    return (
+      <rect
+        x={x - dx}
+        y={y - dy}
+        width={w}
+        height={h}
+        fill={fill}
+        opacity={0.45}
+        rx={4}
+        ry={4}
+        style={{
+          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          filter: 'brightness(1.2)',
+        }}
+      />
+    );
   };
 
   return (
@@ -263,10 +302,10 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                 <XAxis dataKey="date" stroke="#64748b" fontSize={10} tickLine={false} />
                 <YAxis stroke="#64748b" fontSize={10} tickLine={false} />
-                <Tooltip content={<CustomCalorieTooltip />} />
+                <Tooltip content={() => null} cursor={false} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
-                <Bar dataKey="calories_consumed" name="Consumed" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                <Bar dataKey="calories_target" name="Target" fill="#64748b" radius={[4, 4, 0, 0]} maxBarSize={30} opacity={0.3} />
+                <Bar dataKey="calories_consumed" name="Consumed" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={30} activeBar={<ActiveConsumedBar />} />
+                <Bar dataKey="calories_target" name="Target" fill="#64748b" radius={[4, 4, 0, 0]} maxBarSize={30} opacity={0.3} activeBar={<ActiveTargetBar />} />
               </BarChart>
             </ResponsiveContainer>
           </div>
