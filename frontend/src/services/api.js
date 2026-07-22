@@ -42,13 +42,32 @@ api.interceptors.response.use(
           const newAccessToken = response.data.access;
           localStorage.setItem('accessToken', newAccessToken);
           
+          // Sync with savedAccounts if active account is saved
+          const activeUserId = localStorage.getItem('activeUserId');
+          const savedAccountsStr = localStorage.getItem('savedAccounts');
+          if (savedAccountsStr && activeUserId) {
+            try {
+              let accounts = JSON.parse(savedAccountsStr);
+              accounts = accounts.map((acc) => {
+                if (String(acc.id) === String(activeUserId)) {
+                  return { ...acc, accessToken: newAccessToken };
+                }
+                return acc;
+              });
+              localStorage.setItem('savedAccounts', JSON.stringify(accounts));
+            } catch (e) {
+              console.error('Failed to update saved account token on refresh', e);
+            }
+          }
+          
           // Update the original request's auth header and retry it
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return api(originalRequest);
         } catch (refreshError) {
-          // If refresh fails, log out the user
+          // If refresh fails, log out current active tokens
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
+          localStorage.removeItem('activeUserId');
           window.location.href = '/login';
           return Promise.reject(refreshError);
         }

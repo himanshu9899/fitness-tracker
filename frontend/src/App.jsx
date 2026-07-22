@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './components/Login';
@@ -7,12 +7,15 @@ import Dashboard from './components/Dashboard';
 import WorkoutLogger from './components/WorkoutLogger';
 import DietTracker from './components/DietTracker';
 import UserProfile from './components/UserProfile';
-import { LayoutDashboard, Dumbbell, Apple, User, LogOut, Activity } from 'lucide-react';
+import SaveAccountModal from './components/SaveAccountModal';
+import AccountSwitcherModal from './components/AccountSwitcherModal';
+import { LayoutDashboard, Dumbbell, Apple, User, LogOut, Activity, Users, ChevronRight } from 'lucide-react';
 
 const Layout = ({ children }) => {
-  const { logout, user } = useAuth();
+  const { logout, user, savedAccounts, switchAccount, removeSavedAccount } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -61,23 +64,30 @@ const Layout = ({ children }) => {
           </nav>
         </div>
 
-        {/* Footer info in sidebar */}
-        <div className="p-6 border-t border-slate-800 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-bold text-sm text-cyan-400">
-              {user?.username?.charAt(0).toUpperCase()}
+        {/* Footer info & Account Switcher in sidebar */}
+        <div className="p-6 border-t border-slate-800 space-y-3">
+          {/* Active User Card with Switch Account Action */}
+          <button
+            onClick={() => setIsSwitcherOpen(true)}
+            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition-all text-left group"
+          >
+            <div className="flex items-center gap-2.5 truncate pr-1">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center font-bold text-xs text-white shrink-0">
+                {user?.username?.charAt(0).toUpperCase()}
+              </div>
+              <div className="truncate">
+                <p className="text-xs font-bold text-white truncate">{user?.username}</p>
+                <p className="text-3xs text-cyan-400 font-medium">Switch account</p>
+              </div>
             </div>
-            <div className="truncate">
-              <p className="text-xs font-bold text-white truncate">{user?.username}</p>
-              <p className="text-3xs text-slate-500 truncate">{user?.email}</p>
-            </div>
-          </div>
+            <Users className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors shrink-0" />
+          </button>
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3.5 px-4 py-2.5 text-sm font-semibold text-slate-400 hover:text-red-400 rounded-xl hover:bg-red-500/10 transition-all duration-200"
+            className="w-full flex items-center gap-3 px-4 py-2 text-xs font-semibold text-slate-400 hover:text-red-400 rounded-xl hover:bg-red-500/10 transition-all duration-200"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4" />
             Log Out
           </button>
         </div>
@@ -87,7 +97,29 @@ const Layout = ({ children }) => {
       <main className="flex-1 p-6 md:p-10 overflow-y-auto max-h-screen">
         {children}
       </main>
+
+      {/* Account Switcher Modal */}
+      <AccountSwitcherModal
+        isOpen={isSwitcherOpen}
+        onClose={() => setIsSwitcherOpen(false)}
+        savedAccounts={savedAccounts}
+        currentUserId={user?.id}
+        onSwitch={switchAccount}
+        onRemove={removeSavedAccount}
+      />
     </div>
+  );
+};
+
+const GlobalModals = () => {
+  const { pendingSaveAccount, confirmSaveAccount, declineSaveAccount } = useAuth();
+  return (
+    <SaveAccountModal
+      isOpen={!!pendingSaveAccount}
+      accountInfo={pendingSaveAccount}
+      onSave={confirmSaveAccount}
+      onDecline={declineSaveAccount}
+    />
   );
 };
 
@@ -119,6 +151,7 @@ const App = () => {
   return (
     <Router>
       <AuthProvider>
+        <GlobalModals />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
