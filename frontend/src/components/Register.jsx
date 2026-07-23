@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import Logo from './Logo';
-import { Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { Activity, Mail, Lock, User, AlertCircle } from 'lucide-react';
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -30,7 +29,12 @@ const Register = () => {
 
       <div className="w-full max-w-md bg-slate-900/80 border border-slate-800 backdrop-blur-xl rounded-2xl p-8 shadow-2xl relative z-10">
         <div className="flex flex-col items-center mb-8">
-          <Logo size="lg" className="mb-2" />
+          <div className="w-12 h-12 bg-purple-500/20 border border-purple-500/30 rounded-xl flex items-center justify-center mb-3 animate-pulse">
+            <Activity className="w-6 h-6 text-purple-400" />
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+            Create Account
+          </h2>
           <p className="text-slate-400 text-sm mt-1">Start tracking your health today</p>
         </div>
 

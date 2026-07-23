@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import Logo from './Logo';
-import { Lock, User, AlertCircle, Trash2, Plus, ArrowRight, Loader2 } from 'lucide-react';
+import { Activity, Lock, User, AlertCircle, Trash2, Plus, ArrowRight, Loader2 } from 'lucide-react';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -57,7 +56,12 @@ const Login = () => {
 
       <div className="w-full max-w-md bg-slate-900/80 border border-slate-800 backdrop-blur-xl rounded-2xl p-8 shadow-2xl relative z-10 space-y-6">
         <div className="flex flex-col items-center">
-          <Logo size="lg" className="mb-2" />
+          <div className="w-12 h-12 bg-cyan-500/20 border border-cyan-500/30 rounded-xl flex items-center justify-center mb-3 animate-pulse">
+            <Activity className="w-6 h-6 text-cyan-400" />
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+            Welcome to AuraFit
+          </h2>
           <p className="text-slate-400 text-sm mt-1">Track workouts, diet, and progress</p>
         </div>
 

@@ -9,8 +9,7 @@ import DietTracker from './components/DietTracker';
 import UserProfile from './components/UserProfile';
 import SaveAccountModal from './components/SaveAccountModal';
 import AccountSwitcherModal from './components/AccountSwitcherModal';
-import Logo from './components/Logo';
-import { LayoutDashboard, Dumbbell, Apple, User, LogOut, Users, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Apple, User, LogOut, Activity, Users, ChevronRight } from 'lucide-react';
 
 const Layout = ({ children }) => {
   const { logout, user, savedAccounts, switchAccount, removeSavedAccount } = useAuth();
@@ -35,8 +34,13 @@ const Layout = ({ children }) => {
       {/* Side Navigation */}
       <aside className="w-full md:w-64 bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col justify-between shrink-0">
         <div className="p-6">
-          <div className="mb-8">
-            <Logo size="md" />
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-9 h-9 bg-cyan-500/20 border border-cyan-500/30 rounded-lg flex items-center justify-center">
+              <Activity className="w-5 h-5 text-cyan-400" />
+            </div>
+            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              AuraFit
+            </span>
           </div>
 
           <nav className="space-y-1.5">
